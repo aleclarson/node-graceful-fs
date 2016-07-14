@@ -2,27 +2,6 @@ var fs = require('fs')
 var polyfills = require('./polyfills.js')
 var queue = []
 
-var util = require('util')
-
-function noop () {}
-
-var debug = noop
-if (util.debuglog)
-  debug = util.debuglog('gfs4')
-else if (/\bgfs4\b/i.test(process.env.NODE_DEBUG || ''))
-  debug = function() {
-    var m = util.format.apply(util, arguments)
-    m = 'GFS4: ' + m.split(/\n/).join('\nGFS4: ')
-    console.error(m)
-  }
-
-if (/\bgfs4\b/i.test(process.env.NODE_DEBUG || '')) {
-  process.on('exit', function() {
-    debug(queue)
-    require('assert').equal(queue.length, 0)
-  })
-}
-
 module.exports = patch(require('./fs.js'))
 if (process.env.TEST_GRACEFUL_FS_GLOBAL_PATCH) {
   module.exports = patch(fs)
@@ -230,14 +209,12 @@ function patch (fs) {
 }
 
 function enqueue (elem) {
-  debug('ENQUEUE', elem[0].name, elem[1])
   queue.push(elem)
 }
 
 function retry () {
   var elem = queue.shift()
   if (elem) {
-    debug('RETRY', elem[0].name, elem[1])
     elem[0].apply(null, elem[1])
   }
 }
