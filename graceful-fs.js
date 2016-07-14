@@ -1,6 +1,5 @@
 var fs = require('fs')
 var polyfills = require('./polyfills.js')
-var legacy = require('./legacy-streams.js')
 var queue = []
 
 var util = require('util')
@@ -57,8 +56,6 @@ function patch (fs) {
   // Everything that references the open() function needs to be in here
   polyfills(fs)
   fs.gracefulify = patch
-  fs.FileReadStream = ReadStream;  // Legacy name.
-  fs.FileWriteStream = WriteStream;  // Legacy name.
   fs.createReadStream = createReadStream
   fs.createWriteStream = createWriteStream
   var fs$readFile = fs.readFile
@@ -144,13 +141,6 @@ function patch (fs) {
         }
       })
     }
-  }
-
-
-  if (process.version.substr(0, 4) === 'v0.8') {
-    var legStreams = legacy(fs)
-    ReadStream = legStreams.ReadStream
-    WriteStream = legStreams.WriteStream
   }
 
   var fs$ReadStream = fs.ReadStream
